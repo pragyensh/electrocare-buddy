@@ -35,8 +35,7 @@ export const Route = createFileRoute("/api/asr")({
           );
         }
         const data = (await res.json()) as any;
-        const transcript =
-          data?.results?.channels?.[0]?.alternatives?.[0]?.transcript || "";
+        const transcript = data?.results?.channels?.[0]?.alternatives?.[0]?.transcript || "";
         return Response.json({ transcript });
       },
     },

@@ -3,14 +3,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, MicOff, Languages, Bot, User, Volume2, Wrench, RotateCcw, Send } from "lucide-react";
 import { SettingsPanel, type AsrProvider, type TtsProvider } from "@/components/SettingsPanel";
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "ElectroCare — Bilingual Voice Support for Home Appliances" },
-      { name: "description", content: "Tap to talk: troubleshoot AC, washing machine, fridge, microwave and geyser problems in English or Hindi." },
+      {
+        name: "description",
+        content:
+          "Tap to talk: troubleshoot AC, washing machine, fridge, microwave and geyser problems in English or Hindi.",
+      },
       { property: "og:title", content: "ElectroCare Voice Support" },
-      { property: "og:description", content: "Bilingual (EN/HI) voice troubleshooting for everyday electrical equipment." },
+      {
+        property: "og:description",
+        content: "Bilingual (EN/HI) voice troubleshooting for everyday electrical equipment.",
+      },
     ],
   }),
   component: Index,
@@ -27,22 +33,47 @@ const COPY = {
     placeholder: "Type your problem or tap the mic…",
     tapStart: "Tap to speak",
     tapStop: "Tap to stop",
-    status: { idle: "Idle", listening: "Listening…", thinking: "Thinking…", speaking: "Speaking…", error: "Error" },
-    quick: ["My AC is not cooling", "Washing machine is leaking", "Fridge is making noise", "Geyser has no hot water"],
-    you: "You", bot: "ElectroCare",
+    status: {
+      idle: "Idle",
+      listening: "Listening…",
+      thinking: "Thinking…",
+      speaking: "Speaking…",
+      error: "Error",
+    },
+    quick: [
+      "My AC is not cooling",
+      "Washing machine is leaking",
+      "Fridge is making noise",
+      "Geyser has no hot water",
+    ],
+    you: "You",
+    bot: "ElectroCare",
     listeningHint: "Listening — speak now",
     reset: "New conversation",
     noSpeech: "Speech recognition isn't supported in this browser. You can still type.",
   },
   "hi-IN": {
     label: "हिंदी",
-    greeting: "Namaste! Main ElectroCare hoon. Mic dabakar batayein appliance mein kya problem hai.",
+    greeting:
+      "Namaste! Main ElectroCare hoon. Mic dabakar batayein appliance mein kya problem hai.",
     placeholder: "Apni problem likhein ya mic dabayein…",
     tapStart: "Bolne ke liye dabayein",
     tapStop: "Rokne ke liye dabayein",
-    status: { idle: "Taiyaar", listening: "Sun raha hoon…", thinking: "Soch raha hoon…", speaking: "Bol raha hoon…", error: "Error" },
-    quick: ["Mera AC cooling nahi kar raha", "Washing machine leak ho rahi hai", "Fridge se awaaz aa rahi hai", "Geyser garam paani nahi de raha"],
-    you: "Aap", bot: "ElectroCare",
+    status: {
+      idle: "Taiyaar",
+      listening: "Sun raha hoon…",
+      thinking: "Soch raha hoon…",
+      speaking: "Bol raha hoon…",
+      error: "Error",
+    },
+    quick: [
+      "Mera AC cooling nahi kar raha",
+      "Washing machine leak ho rahi hai",
+      "Fridge se awaaz aa rahi hai",
+      "Geyser garam paani nahi de raha",
+    ],
+    you: "Aap",
+    bot: "ElectroCare",
     listeningHint: "Sun raha hoon — abhi boliye",
     reset: "Nayi baatcheet",
     noSpeech: "Is browser mein speech recognition support nahi hai. Aap type kar sakte hain.",
@@ -70,9 +101,10 @@ function Index() {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-
   const speechSupported = useMemo(
-    () => typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window),
+    () =>
+      typeof window !== "undefined" &&
+      ("SpeechRecognition" in window || "webkitSpeechRecognition" in window),
     [],
   );
 
@@ -262,7 +294,6 @@ function Index() {
     window.speechSynthesis.speak(u);
   }
 
-
   function reset() {
     window.speechSynthesis?.cancel();
     recognitionRef.current?.abort?.();
@@ -290,7 +321,9 @@ function Index() {
             </div>
             <div>
               <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">ElectroCare</h1>
-              <p className="text-xs text-muted-foreground">Bilingual voice support for home appliances</p>
+              <p className="text-xs text-muted-foreground">
+                Bilingual voice support for home appliances
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -308,7 +341,6 @@ function Index() {
               <RotateCcw size={14} /> {t.reset}
             </button>
           </div>
-
         </header>
 
         {/* Controls row */}
@@ -320,7 +352,9 @@ function Index() {
                 key={code}
                 onClick={() => setLang(code)}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                  lang === code ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  lang === code
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
                 type="button"
               >
@@ -485,13 +519,20 @@ function StatusPill({ status, label }: { status: Status; label: string }) {
       {status === "listening" ? (
         <span className="inline-flex h-4 items-end gap-[2px]">
           {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className="bar inline-block w-[2px] rounded-full" style={{ height: "100%", background: color }} />
+            <span
+              key={i}
+              className="bar inline-block w-[2px] rounded-full"
+              style={{ height: "100%", background: color }}
+            />
           ))}
         </span>
       ) : status === "speaking" ? (
         <Volume2 size={14} style={{ color }} />
       ) : (
-        <span className="h-2 w-2 rounded-full" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+        <span
+          className="h-2 w-2 rounded-full"
+          style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+        />
       )}
       <span className="text-foreground/90">{label}</span>
     </div>

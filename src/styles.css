@@ -113,22 +113,46 @@
 }
 
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 oklch(0.78 0.16 195 / 0.6); }
-  70% { box-shadow: 0 0 0 24px oklch(0.78 0.16 195 / 0); }
-  100% { box-shadow: 0 0 0 0 oklch(0.78 0.16 195 / 0); }
+  0% {
+    box-shadow: 0 0 0 0 oklch(0.78 0.16 195 / 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 24px oklch(0.78 0.16 195 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.78 0.16 195 / 0);
+  }
 }
 
 @keyframes wave {
-  0%, 100% { transform: scaleY(0.4); }
-  50% { transform: scaleY(1); }
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
 
-.mic-pulse { animation: pulse-ring 1.6s ease-out infinite; }
-.bar { animation: wave 1s ease-in-out infinite; transform-origin: center; }
-.bar:nth-child(2) { animation-delay: 0.15s; }
-.bar:nth-child(3) { animation-delay: 0.3s; }
-.bar:nth-child(4) { animation-delay: 0.45s; }
-.bar:nth-child(5) { animation-delay: 0.6s; }
+.mic-pulse {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+.bar {
+  animation: wave 1s ease-in-out infinite;
+  transform-origin: center;
+}
+.bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.bar:nth-child(4) {
+  animation-delay: 0.45s;
+}
+.bar:nth-child(5) {
+  animation-delay: 0.6s;
+}
 
 @layer base {
   * {

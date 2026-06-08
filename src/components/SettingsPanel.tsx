@@ -66,9 +66,7 @@ export function SettingsPanel({
             badge={status?.ai.active ?? "…"}
             badgeOk={!!status && !status.ai.fallback}
           >
-            <p className="text-xs text-muted-foreground">
-              {status?.ai.model ?? "Checking…"}
-            </p>
+            <p className="text-xs text-muted-foreground">{status?.ai.model ?? "Checking…"}</p>
             {status?.ai.fallback && (
               <p className="mt-2 text-xs text-yellow-500">
                 OPENAI_API_KEY missing — using local keyword KB fallback.
@@ -76,12 +74,7 @@ export function SettingsPanel({
             )}
           </Section>
 
-          <Section
-            icon={<Mic size={14} />}
-            title="Speech-to-Text"
-            badge={asr}
-            badgeOk
-          >
+          <Section icon={<Mic size={14} />} title="Speech-to-Text" badge={asr} badgeOk>
             <ProviderToggle
               value={asr}
               onChange={onAsrChange as (v: string) => void}
@@ -97,12 +90,7 @@ export function SettingsPanel({
             />
           </Section>
 
-          <Section
-            icon={<Volume2 size={14} />}
-            title="Text-to-Speech"
-            badge={tts}
-            badgeOk
-          >
+          <Section icon={<Volume2 size={14} />} title="Text-to-Speech" badge={tts} badgeOk>
             <ProviderToggle
               value={tts}
               onChange={onTtsChange as (v: string) => void}

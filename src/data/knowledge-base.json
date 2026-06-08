@@ -1,7 +1,19 @@
 [
   {
     "id": "ac-not-cooling",
-    "keywords": ["ac", "air conditioner", "cooling", "not cold", "compressor", "filter", "gas", "एसी", "कूलिंग", "ठंडा", "thanda"],
+    "keywords": [
+      "ac",
+      "air conditioner",
+      "cooling",
+      "not cold",
+      "compressor",
+      "filter",
+      "gas",
+      "एसी",
+      "कूलिंग",
+      "ठंडा",
+      "thanda"
+    ],
     "question_en": "AC is running but not cooling",
     "question_hi": "AC chal raha hai lekin cooling nahi kar raha",
     "answer_en": "Common causes are a dirty filter, wrong mode, blocked outdoor unit airflow, or low refrigerant. Set the AC to Cool mode at 22 to 24 degrees, clean the indoor filter, and make sure the outdoor unit has clear airflow. If there is ice on the coil or a burning smell, switch it off and call a technician.",
@@ -9,7 +21,18 @@
   },
   {
     "id": "ac-making-noise",
-    "keywords": ["ac", "noise", "loud", "rattle", "vibration", "sound", "awaaz", "shor", "एसी", "आवाज"],
+    "keywords": [
+      "ac",
+      "noise",
+      "loud",
+      "rattle",
+      "vibration",
+      "sound",
+      "awaaz",
+      "shor",
+      "एसी",
+      "आवाज"
+    ],
     "question_en": "AC is making loud noise",
     "question_hi": "AC se zor ki awaaz aa rahi hai",
     "answer_en": "Loud noise often comes from a loose outdoor unit panel, dust on the fan, or a worn fan bearing. Switch off the AC and check the outdoor unit screws and fan blades for dust. If a metallic grinding sound continues, stop using the AC and call a technician.",
@@ -25,7 +48,15 @@
   },
   {
     "id": "washer-not-spinning",
-    "keywords": ["washing machine", "washer", "spin", "not spinning", "drum", "वॉशिंग", "spin nahi"],
+    "keywords": [
+      "washing machine",
+      "washer",
+      "spin",
+      "not spinning",
+      "drum",
+      "वॉशिंग",
+      "spin nahi"
+    ],
     "question_en": "Washing machine is not spinning",
     "question_hi": "Washing machine spin nahi kar rahi",
     "answer_en": "Spin issues usually come from an unbalanced load, water not draining, or a lid switch problem. Open the lid, spread clothes evenly, and remove a few items if overloaded. Run a Drain or Spin only cycle. If water remains, the drain filter may be blocked.",
@@ -33,7 +64,17 @@
   },
   {
     "id": "washer-leaking",
-    "keywords": ["washing machine", "washer", "leak", "leaking", "water", "paani", "leakage", "वॉशिंग", "पानी"],
+    "keywords": [
+      "washing machine",
+      "washer",
+      "leak",
+      "leaking",
+      "water",
+      "paani",
+      "leakage",
+      "वॉशिंग",
+      "पानी"
+    ],
     "question_en": "Washing machine is leaking water",
     "question_hi": "Washing machine se paani leak ho raha hai",
     "answer_en": "Leaks often come from a loose inlet hose, blocked drain hose, or torn door gasket on front load machines. Switch off power and water supply, check that both inlet and drain hoses are tight and not cracked, and inspect the rubber door seal for tears. Do not run the machine until the leak source is found.",
@@ -49,7 +90,16 @@
   },
   {
     "id": "fridge-not-cooling",
-    "keywords": ["fridge", "refrigerator", "cooling", "not cold", "freezer", "compressor", "फ्रिज", "ठंडा"],
+    "keywords": [
+      "fridge",
+      "refrigerator",
+      "cooling",
+      "not cold",
+      "freezer",
+      "compressor",
+      "फ्रिज",
+      "ठंडा"
+    ],
     "question_en": "Refrigerator is not cooling properly",
     "question_hi": "Fridge theek se cooling nahi kar raha",
     "answer_en": "Cooling drops if the door seal leaks, vents are blocked by food, the temperature is set too high, or condenser coils are dusty. Set the temperature to medium cold, move food away from the air vents inside, and avoid opening the door for two hours. Check the door gasket by closing the door on a paper strip; it should grip lightly.",
@@ -57,7 +107,17 @@
   },
   {
     "id": "fridge-making-noise",
-    "keywords": ["fridge", "refrigerator", "noise", "loud", "humming", "buzzing", "awaaz", "फ्रिज", "आवाज"],
+    "keywords": [
+      "fridge",
+      "refrigerator",
+      "noise",
+      "loud",
+      "humming",
+      "buzzing",
+      "awaaz",
+      "फ्रिज",
+      "आवाज"
+    ],
     "question_en": "Refrigerator is making loud noise",
     "question_hi": "Fridge se loud noise aa rahi hai",
     "answer_en": "Noise can come from an uneven floor, items vibrating on top, or the compressor working hard due to dust on coils. Make sure the fridge is level, remove loose items from the top, and gently vacuum dust from the condenser coils at the back. If you hear a sharp clicking from the compressor that does not stop, call a technician.",

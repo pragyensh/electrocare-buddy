@@ -45,7 +45,11 @@ export const Route = createFileRoute("/api/ask")({
 
         if (apiKey) {
           try {
-            const { answer, matches, confidence, contextMode } = await answerWithOpenAI(apiKey, text, lang);
+            const { answer, matches, confidence, contextMode } = await answerWithOpenAI(
+              apiKey,
+              text,
+              lang,
+            );
             if (answer) {
               return Response.json({
                 answer,
@@ -56,12 +60,18 @@ export const Route = createFileRoute("/api/ask")({
               });
             }
           } catch (e) {
-            console.error("[ElectroCare] OpenAI answer generation failed; not returning retrieved KB as answer", e);
+            console.error(
+              "[ElectroCare] OpenAI answer generation failed; not returning retrieved KB as answer",
+              e,
+            );
             const fallback =
               lang === "hi"
                 ? "Maaf kijiye, AI answer abhi generate nahi ho pa raha. Kripya thodi der baad dobara try karein."
                 : "Sorry, I could not generate an AI answer right now. Please try again in a moment.";
-            return Response.json({ answer: fallback, provider: "openai", mode: "openai_error" }, { status: 200 });
+            return Response.json(
+              { answer: fallback, provider: "openai", mode: "openai_error" },
+              { status: 200 },
+            );
           }
         }
 
