@@ -293,13 +293,22 @@ function Index() {
               <p className="text-xs text-muted-foreground">Bilingual voice support for home appliances</p>
             </div>
           </div>
-          <button
-            onClick={reset}
-            className="hidden items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-2 text-xs text-muted-foreground transition hover:text-foreground sm:inline-flex"
-            type="button"
-          >
-            <RotateCcw size={14} /> {t.reset}
-          </button>
+          <div className="flex items-center gap-2">
+            <SettingsPanel
+              asr={asrProvider}
+              tts={ttsProvider}
+              onAsrChange={setAsrProvider}
+              onTtsChange={setTtsProvider}
+            />
+            <button
+              onClick={reset}
+              className="hidden items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-2 text-xs text-muted-foreground transition hover:text-foreground sm:inline-flex"
+              type="button"
+            >
+              <RotateCcw size={14} /> {t.reset}
+            </button>
+          </div>
+
         </header>
 
         {/* Controls row */}
