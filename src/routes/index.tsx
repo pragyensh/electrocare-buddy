@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, MicOff, Languages, Bot, User, Volume2, Wrench, RotateCcw, Send } from "lucide-react";
+import { SettingsPanel, type AsrProvider, type TtsProvider } from "@/components/SettingsPanel";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
