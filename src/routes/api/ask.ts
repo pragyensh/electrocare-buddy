@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import process from "node:process";
-import { answerWithOpenAI, bestKeywordAnswer } from "@/lib/rag.server";
+import {
+  OUT_OF_DOMAIN_RESPONSE,
+  answerWithOpenAI,
+  bestKeywordAnswer,
+  classifySupportedDomain,
+} from "@/lib/rag.server";
 
 export const Route = createFileRoute("/api/ask")({
   server: {
@@ -18,15 +23,35 @@ export const Route = createFileRoute("/api/ask")({
         if (!text) return Response.json({ error: "Missing text" }, { status: 400 });
 
         const apiKey = process.env.OPENAI_API_KEY;
+        const domain = classifySupportedDomain(text);
+
+        console.log(
+          "[ElectroCare] User question",
+          JSON.stringify({ text, lang, hasOpenAI: !!apiKey, domain }),
+        );
+
+        if (!domain.inDomain) {
+          console.log(
+            "[ElectroCare] Domain classification blocked retrieval",
+            JSON.stringify({ text, reason: domain.reason }),
+          );
+          return Response.json({
+            answer: OUT_OF_DOMAIN_RESPONSE,
+            provider: apiKey ? "openai" : "local",
+            mode: "out_of_domain",
+            domain,
+          });
+        }
 
         if (apiKey) {
           try {
-            const { answer, matches } = await answerWithOpenAI(apiKey, text, lang);
+            const { answer, matches, confidence, contextMode } = await answerWithOpenAI(apiKey, text, lang);
             if (answer) {
               return Response.json({
                 answer,
                 provider: "openai",
-                mode: "rag",
+                mode: contextMode,
+                confidence,
                 matches,
               });
             }
