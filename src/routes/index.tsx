@@ -55,6 +55,8 @@ function Index() {
   const [interim, setInterim] = useState("");
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
+  const [asrProvider, setAsrProvider] = useState<AsrProvider>("browser");
+  const [ttsProvider, setTtsProvider] = useState<TtsProvider>("browser");
   const t = COPY[lang];
   const [messages, setMessages] = useState<Msg[]>([
     { id: crypto.randomUUID(), role: "assistant", text: COPY["en-IN"].greeting },
@@ -63,6 +65,11 @@ function Index() {
   const recognitionRef = useRef<any>(null);
   const finalRef = useRef("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaChunksRef = useRef<Blob[]>([]);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
 
   const speechSupported = useMemo(
     () => typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window),
