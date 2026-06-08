@@ -18,6 +18,91 @@ type Entry = {
 };
 
 const ENTRIES = kb as Entry[];
+const CONFIDENCE_THRESHOLD = 0.7;
+export const OUT_OF_DOMAIN_RESPONSE =
+  "I currently support ACs, refrigerators, washing machines, microwaves, geysers and related home appliances.";
+
+const SUPPORTED_DOMAIN_TERMS = [
+  "ac",
+  "a/c",
+  "air conditioner",
+  "air conditioning",
+  "split ac",
+  "window ac",
+  "fridge",
+  "refrigerator",
+  "freezer",
+  "washing machine",
+  "washer",
+  "microwave",
+  "oven",
+  "geyser",
+  "water heater",
+  "एसी",
+  "फ्रिज",
+  "रेफ्रिजरेटर",
+  "वॉशिंग मशीन",
+  "माइक्रोवेव",
+  "गीजर",
+];
+
+const UNSUPPORTED_DOMAIN_TERMS = [
+  "car",
+  "vehicle",
+  "bike",
+  "motorcycle",
+  "scooter",
+  "truck",
+  "laptop",
+  "computer",
+  "mobile",
+  "phone",
+  "printer",
+  "wifi",
+  "router",
+  "television",
+  "tv",
+];
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasTerm(query: string, term: string): boolean {
+  const asciiTerm = /^[a-z0-9/ ]+$/i.test(term);
+  if (asciiTerm) {
+    return new RegExp(`(^|[^a-z0-9])${escapeRegex(term)}([^a-z0-9]|$)`, "i").test(query);
+  }
+  return query.includes(term);
+}
+
+export function classifySupportedDomain(query: string): {
+  inDomain: boolean;
+  reason: string;
+  supportedTerms: string[];
+  unsupportedTerms: string[];
+} {
+  const normalized = query.toLowerCase();
+  const supportedTerms = SUPPORTED_DOMAIN_TERMS.filter((term) => hasTerm(normalized, term));
+  const unsupportedTerms = UNSUPPORTED_DOMAIN_TERMS.filter((term) => hasTerm(normalized, term));
+
+  if (unsupportedTerms.length && !supportedTerms.length) {
+    return { inDomain: false, reason: "unsupported_category", supportedTerms, unsupportedTerms };
+  }
+
+  if (unsupportedTerms.includes("car") || unsupportedTerms.includes("vehicle")) {
+    const nonVehicleSupported = supportedTerms.filter((term) => term !== "ac" && term !== "a/c");
+    if (!nonVehicleSupported.length) {
+      return { inDomain: false, reason: "vehicle_related", supportedTerms, unsupportedTerms };
+    }
+  }
+
+  if (supportedTerms.length) {
+    return { inDomain: true, reason: "supported_appliance", supportedTerms, unsupportedTerms };
+  }
+
+  return { inDomain: false, reason: "no_supported_appliance_detected", supportedTerms, unsupportedTerms };
+}
 
 type Indexed = { entry: Entry; vector: number[] };
 let INDEX: Indexed[] | null = null;
@@ -125,27 +210,74 @@ export async function answerWithOpenAI(
   apiKey: string,
   query: string,
   lang: "en" | "hi",
-): Promise<{ answer: string; matches: { id: string; score: number }[] }> {
+): Promise<{
+  answer: string;
+  matches: { id: string; score: number; usedForContext: boolean }[];
+  confidence: number;
+  contextMode: "retrieved_context" | "openai_only";
+}> {
   let matches: { entry: Entry; score: number }[] = [];
   try {
     matches = await retrieveSemantic(apiKey, query, 4);
-  } catch {
-    matches = retrieveKeyword(query, 4);
+  } catch (error) {
+    console.error("[ElectroCare] Semantic retrieval failed; OpenAI will answer without KB context", error);
   }
+
+  const confidence = matches[0]?.score ?? 0;
+  const contextMatches = confidence > CONFIDENCE_THRESHOLD ? matches : [];
+  const contextMode = contextMatches.length ? "retrieved_context" : "openai_only";
+  console.log(
+    "[ElectroCare] Retrieved documents",
+    JSON.stringify({
+      threshold: CONFIDENCE_THRESHOLD,
+      confidence,
+      contextMode,
+      documents: matches.map(({ entry, score }) => ({
+        id: entry.id,
+        score,
+        question_en: entry.question_en,
+      })),
+    }),
+  );
 
   const langInstruction =
     lang === "hi"
       ? "Reply in conversational Hinglish (romanized Hindi mixed with simple English). Keep it warm, like a phone support agent. 3-5 short sentences. Mention likely causes and clear troubleshooting steps."
       : "Reply in clear, friendly English like a phone support agent for Indian customers. 3-5 short sentences. Mention likely causes and clear troubleshooting steps.";
 
+  const contextBlock = contextMatches.length
+    ? `Retrieved knowledge to use as context only, not as the final answer:\n${formatContext(contextMatches, lang)}`
+    : "No retrieved KB context is being used because retrieval confidence was low. Answer from general safe home-appliance troubleshooting knowledge only.";
+
   const system = `You are ElectroCare, a customer support agent for home electrical appliances (AC, washing machine, refrigerator, microwave, geyser).
-Reason from the retrieved knowledge below, but you may generalize to unseen questions using common appliance knowledge.
+The final answer must be your own support-agent response. Retrieved knowledge is context only and must never be copied directly as the answer.
 Always: 1) acknowledge the problem, 2) explain the likely cause briefly, 3) give 2-4 concrete steps the user can try safely, 4) advise when to call a technician (gas leaks, burning smell, sparks, water near electricity).
 Never invent model-specific part numbers. Do not use markdown formatting or bullet symbols — speak plainly so a TTS engine reads it naturally.
 ${langInstruction}
 
-Retrieved knowledge:
-${formatContext(matches, lang)}`;
+${contextBlock}`;
+
+  const payload = {
+    model: "gpt-4o-mini",
+    temperature: 0.4,
+    max_tokens: 900,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: query },
+    ],
+  };
+
+  console.log(
+    "[ElectroCare] OpenAI request",
+    JSON.stringify({
+      model: payload.model,
+      temperature: payload.temperature,
+      max_tokens: payload.max_tokens,
+      contextMode,
+      confidence,
+      messages: payload.messages,
+    }),
+  );
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -153,20 +285,23 @@ ${formatContext(matches, lang)}`;
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0.4,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: query },
-      ],
-    }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Chat failed: ${res.status} ${await res.text()}`);
-  const data = (await res.json()) as { choices: { message: { content: string } }[] };
+  const data = (await res.json()) as { choices: { message: { content: string }; finish_reason?: string }[] };
   const answer = data.choices[0]?.message?.content?.trim() || "";
+  console.log(
+    "[ElectroCare] OpenAI response",
+    JSON.stringify({ answer, finishReason: data.choices[0]?.finish_reason, contextMode, confidence }),
+  );
   return {
     answer,
-    matches: matches.map((m) => ({ id: m.entry.id, score: m.score })),
+    confidence,
+    contextMode,
+    matches: matches.map((m) => ({
+      id: m.entry.id,
+      score: m.score,
+      usedForContext: contextMatches.some((cm) => cm.entry.id === m.entry.id),
+    })),
   };
 }

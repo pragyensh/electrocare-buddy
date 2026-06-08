@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import process from "node:process";
-import { answerWithOpenAI, bestKeywordAnswer } from "@/lib/rag.server";
+import {
+  OUT_OF_DOMAIN_RESPONSE,
+  answerWithOpenAI,
+  bestKeywordAnswer,
+  classifySupportedDomain,
+} from "@/lib/rag.server";
 
 export const Route = createFileRoute("/api/ask")({
   server: {
@@ -18,24 +23,49 @@ export const Route = createFileRoute("/api/ask")({
         if (!text) return Response.json({ error: "Missing text" }, { status: 400 });
 
         const apiKey = process.env.OPENAI_API_KEY;
+        const domain = classifySupportedDomain(text);
+
+        console.log(
+          "[ElectroCare] User question",
+          JSON.stringify({ text, lang, hasOpenAI: !!apiKey, domain }),
+        );
+
+        if (!domain.inDomain) {
+          console.log(
+            "[ElectroCare] Domain classification blocked retrieval",
+            JSON.stringify({ text, reason: domain.reason }),
+          );
+          return Response.json({
+            answer: OUT_OF_DOMAIN_RESPONSE,
+            provider: apiKey ? "openai" : "local",
+            mode: "out_of_domain",
+            domain,
+          });
+        }
 
         if (apiKey) {
           try {
-            const { answer, matches } = await answerWithOpenAI(apiKey, text, lang);
+            const { answer, matches, confidence, contextMode } = await answerWithOpenAI(apiKey, text, lang);
             if (answer) {
               return Response.json({
                 answer,
                 provider: "openai",
-                mode: "rag",
+                mode: contextMode,
+                confidence,
                 matches,
               });
             }
           } catch (e) {
-            console.error("OpenAI RAG failed, falling back to keyword KB:", e);
+            console.error("[ElectroCare] OpenAI answer generation failed; not returning retrieved KB as answer", e);
+            const fallback =
+              lang === "hi"
+                ? "Maaf kijiye, AI answer abhi generate nahi ho pa raha. Kripya thodi der baad dobara try karein."
+                : "Sorry, I could not generate an AI answer right now. Please try again in a moment.";
+            return Response.json({ answer: fallback, provider: "openai", mode: "openai_error" }, { status: 200 });
           }
         }
 
-        // Fallback: keyword KB (original behavior).
+        // Fallback only when OpenAI credentials are not configured.
         const local = bestKeywordAnswer(text, lang);
         if (local) {
           return Response.json({ answer: local, provider: "local", mode: "keyword" });
