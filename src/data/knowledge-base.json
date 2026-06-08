@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ac-not-cooling",
+    "keywords": ["ac", "air conditioner", "cooling", "not cold", "compressor", "filter", "gas", "एसी", "कूलिंग", "ठंडा", "thanda"],
+    "question_en": "AC is running but not cooling",
+    "question_hi": "AC chal raha hai lekin cooling nahi kar raha",
+    "answer_en": "Common causes are a dirty filter, wrong mode, blocked outdoor unit airflow, or low refrigerant. Set the AC to Cool mode at 22 to 24 degrees, clean the indoor filter, and make sure the outdoor unit has clear airflow. If there is ice on the coil or a burning smell, switch it off and call a technician.",
+    "answer_hi": "Aam vajah hai dirty filter, galat mode, outdoor unit ka blocked airflow, ya kam gas. AC ko Cool mode par 22 se 24 degree par set karein, indoor filter clean karein aur outdoor unit ke aas paas airflow clear rakhein. Agar coil par ice ya burning smell aaye to AC band karke technician bulayein."
+  },
+  {
+    "id": "ac-making-noise",
+    "keywords": ["ac", "noise", "loud", "rattle", "vibration", "sound", "awaaz", "shor", "एसी", "आवाज"],
+    "question_en": "AC is making loud noise",
+    "question_hi": "AC se zor ki awaaz aa rahi hai",
+    "answer_en": "Loud noise often comes from a loose outdoor unit panel, dust on the fan, or a worn fan bearing. Switch off the AC and check the outdoor unit screws and fan blades for dust. If a metallic grinding sound continues, stop using the AC and call a technician.",
+    "answer_hi": "Loud noise aksar loose outdoor panel, fan par dust, ya fan bearing ki wajah se aati hai. AC band karke outdoor unit ke screws aur fan blades par dust check karein. Agar grinding awaaz aa rahi hai to AC ka use band karke technician bulayein."
+  },
+  {
+    "id": "ac-remote-not-working",
+    "keywords": ["remote", "battery", "sensor", "ac remote", "रिमोट", "बैटरी"],
+    "question_en": "AC remote is not working",
+    "question_hi": "AC remote kaam nahi kar raha",
+    "answer_en": "Usually weak batteries, blocked sensor, or child lock. Replace both batteries with correct polarity, point the remote within 5 meters at the indoor sensor, and try Power and Mode buttons. If the indoor unit responds to its manual button but not the remote, the remote may need replacement.",
+    "answer_hi": "Aksar weak batteries, blocked sensor, ya child lock vajah hoti hai. Dono batteries sahi polarity ke saath replace karein, remote ko 5 meter ke andar sensor ki taraf point karein aur Power aur Mode try karein. Manual button kaam karta hai par remote nahi to remote replace karna pad sakta hai."
+  },
+  {
+    "id": "washer-not-spinning",
+    "keywords": ["washing machine", "washer", "spin", "not spinning", "drum", "वॉशिंग", "spin nahi"],
+    "question_en": "Washing machine is not spinning",
+    "question_hi": "Washing machine spin nahi kar rahi",
+    "answer_en": "Spin issues usually come from an unbalanced load, water not draining, or a lid switch problem. Open the lid, spread clothes evenly, and remove a few items if overloaded. Run a Drain or Spin only cycle. If water remains, the drain filter may be blocked.",
+    "answer_hi": "Spin problem aksar unbalanced load, paani drain na hone, ya lid switch ki wajah se hoti hai. Lid kholkar kapde evenly spread karein aur overload ho to kuch kapde nikaalein. Drain ya Spin only cycle chalayein. Paani ruka ho to drain filter block ho sakta hai."
+  },
+  {
+    "id": "washer-leaking",
+    "keywords": ["washing machine", "washer", "leak", "leaking", "water", "paani", "leakage", "वॉशिंग", "पानी"],
+    "question_en": "Washing machine is leaking water",
+    "question_hi": "Washing machine se paani leak ho raha hai",
+    "answer_en": "Leaks often come from a loose inlet hose, blocked drain hose, or torn door gasket on front load machines. Switch off power and water supply, check that both inlet and drain hoses are tight and not cracked, and inspect the rubber door seal for tears. Do not run the machine until the leak source is found.",
+    "answer_hi": "Leak aksar loose inlet hose, blocked drain hose, ya front load mein torn door gasket ki wajah se hota hai. Power aur water supply band karke dono hoses tight aur crack free hain ya nahi check karein, aur rubber door seal mein tear dekhein. Leak ka source mile bina machine na chalayein."
+  },
+  {
+    "id": "washer-door-locked",
+    "keywords": ["door locked", "washing machine", "lock", "front load", "darwaza", "दरवाजा"],
+    "question_en": "Washing machine door is locked",
+    "question_hi": "Washing machine ka door lock hai",
+    "answer_en": "Front load doors stay locked when water is inside, the cycle is active, or the safety lock has not released. Wait two to three minutes after the cycle ends, run a Drain or Spin if water is visible, then switch off power for five minutes and try again. Do not force the handle.",
+    "answer_hi": "Front load door tab locked rehta hai jab paani andar ho, cycle active ho, ya safety lock release na hua ho. Cycle khatam hone ke baad 2-3 minute wait karein, paani ho to Drain ya Spin chalayein, phir power 5 minute band karke try karein. Handle force na karein."
+  },
+  {
+    "id": "fridge-not-cooling",
+    "keywords": ["fridge", "refrigerator", "cooling", "not cold", "freezer", "compressor", "फ्रिज", "ठंडा"],
+    "question_en": "Refrigerator is not cooling properly",
+    "question_hi": "Fridge theek se cooling nahi kar raha",
+    "answer_en": "Cooling drops if the door seal leaks, vents are blocked by food, the temperature is set too high, or condenser coils are dusty. Set the temperature to medium cold, move food away from the air vents inside, and avoid opening the door for two hours. Check the door gasket by closing the door on a paper strip; it should grip lightly.",
+    "answer_hi": "Cooling kam ho jaati hai agar door seal leak ho, vents food se block ho, temperature high ho, ya condenser coils dusty ho. Temperature medium cold par set karein, food ko internal vents se door rakhein, aur 2 ghante door na kholein. Door gasket check karne ke liye paper strip par door band karein, halki grip honi chahiye."
+  },
+  {
+    "id": "fridge-making-noise",
+    "keywords": ["fridge", "refrigerator", "noise", "loud", "humming", "buzzing", "awaaz", "फ्रिज", "आवाज"],
+    "question_en": "Refrigerator is making loud noise",
+    "question_hi": "Fridge se loud noise aa rahi hai",
+    "answer_en": "Noise can come from an uneven floor, items vibrating on top, or the compressor working hard due to dust on coils. Make sure the fridge is level, remove loose items from the top, and gently vacuum dust from the condenser coils at the back. If you hear a sharp clicking from the compressor that does not stop, call a technician.",
+    "answer_hi": "Noise uneven floor, upar rakhi cheezon ke vibrate hone, ya coils par dust se compressor zyada chalne ki wajah se ho sakti hai. Fridge level karein, upar se loose items hataayein aur peeche condenser coils par halke se vacuum karein. Compressor se sharp clicking na ruke to technician bulayein."
+  },
+  {
+    "id": "microwave-not-heating",
+    "keywords": ["microwave", "not heating", "cold food", "heat", "garam", "माइक्रोवेव"],
+    "question_en": "Microwave is not heating food",
+    "question_hi": "Microwave food garam nahi kar raha",
+    "answer_en": "If the microwave runs but does not heat, the magnetron or high voltage diode is usually faulty. First confirm that the power level is set to High, the door closes fully, and you are using microwave safe utensils. If it still does not heat, stop using it and call a technician because internal high voltage parts are dangerous to open.",
+    "answer_hi": "Agar microwave chal raha hai par garam nahi kar raha to aksar magnetron ya high voltage diode kharab hota hai. Pehle confirm karein ki power level High par hai, door poori tarah band hai aur microwave safe bartan use ho rahe hain. Phir bhi garam na ho to use band karein aur technician bulayein, andar high voltage parts khatarnak hain."
+  },
+  {
+    "id": "microwave-sparking",
+    "keywords": ["microwave", "spark", "sparking", "fire", "arcing", "chingari", "माइक्रोवेव"],
+    "question_en": "Microwave is sparking inside",
+    "question_hi": "Microwave ke andar chingari aa rahi hai",
+    "answer_en": "Sparking is usually caused by metal items, foil, dirty cavity walls, or a damaged waveguide cover. Stop the microwave immediately, remove any metal or foil, and clean grease and food bits from the inside walls and the small mica cover on the side. If sparks continue with an empty clean cavity, do not use the microwave and call a technician.",
+    "answer_hi": "Chingari aksar metal, foil, dirty cavity, ya damaged waveguide cover ki vajah se aati hai. Microwave turant band karein, metal ya foil hataayein, aur andar ki walls aur side ka chhota mica cover saaf karein. Empty saaf microwave mein bhi spark aaye to use band karke technician bulayein."
+  },
+  {
+    "id": "geyser-no-hot-water",
+    "keywords": ["geyser", "water heater", "no hot water", "not heating", "garam paani", "गीजर"],
+    "question_en": "Geyser is not giving hot water",
+    "question_hi": "Geyser garam paani nahi de raha",
+    "answer_en": "Check that the power switch and indicator light are on, the thermostat is set high enough, and the inlet water valve is open. Wait the full heating time, usually 10 to 15 minutes for a 15 litre tank. If the indicator is on but water stays cold, the heating element or thermostat may be faulty and needs a technician.",
+    "answer_hi": "Check karein ki power switch aur indicator light on hai, thermostat high enough set hai, aur inlet water valve khula hai. Poora heating time wait karein, 15 litre tank ke liye 10 se 15 minute. Indicator on hone ke baad bhi paani thanda rahe to heating element ya thermostat kharab ho sakta hai, technician bulayein."
+  },
+  {
+    "id": "geyser-leaking",
+    "keywords": ["geyser", "water heater", "leak", "leaking", "drip", "paani", "गीजर", "रिसाव"],
+    "question_en": "Geyser is leaking water",
+    "question_hi": "Geyser se paani leak ho raha hai",
+    "answer_en": "Geyser leaks usually come from loose inlet or outlet pipe joints, the pressure relief valve, or a corroded tank. Switch off the power immediately, close the inlet water valve, and check the pipe joints for moisture. A small drip from the pressure valve when heating is normal, but a continuous leak or leak from the tank body means the geyser needs a technician.",
+    "answer_hi": "Geyser leak aksar loose inlet ya outlet pipe joints, pressure relief valve, ya corroded tank ki vajah se hota hai. Power turant band karein, inlet valve band karein, aur pipe joints par moisture check karein. Heating ke time pressure valve se halki drip normal hai, lekin lagataar leak ya tank se leak ho to technician bulayein."
+  }
+]
