@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as ApiProvidersRouteImport } from './routes/api/providers'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiAsrRouteImport } from './routes/api/asr'
 import { Route as ApiAskRouteImport } from './routes/api/ask'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +21,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProvidersRoute = ApiProvidersRouteImport.update({
+  id: '/api/providers',
+  path: '/api/providers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAsrRoute = ApiAsrRouteImport.update({
+  id: '/api/asr',
+  path: '/api/asr',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAskRoute = ApiAskRouteImport.update({
@@ -32,31 +50,62 @@ const ApiAskRoute = ApiAskRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/ask': typeof ApiAskRoute
+  '/api/asr': typeof ApiAsrRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/providers': typeof ApiProvidersRoute
+  '/api/tts': typeof ApiTtsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/ask': typeof ApiAskRoute
+  '/api/asr': typeof ApiAsrRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/providers': typeof ApiProvidersRoute
+  '/api/tts': typeof ApiTtsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/ask': typeof ApiAskRoute
+  '/api/asr': typeof ApiAsrRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/providers': typeof ApiProvidersRoute
+  '/api/tts': typeof ApiTtsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/ask' | '/api/health'
+  fullPaths:
+    | '/'
+    | '/api/ask'
+    | '/api/asr'
+    | '/api/health'
+    | '/api/providers'
+    | '/api/tts'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/ask' | '/api/health'
-  id: '__root__' | '/' | '/api/ask' | '/api/health'
+  to:
+    | '/'
+    | '/api/ask'
+    | '/api/asr'
+    | '/api/health'
+    | '/api/providers'
+    | '/api/tts'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/ask'
+    | '/api/asr'
+    | '/api/health'
+    | '/api/providers'
+    | '/api/tts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiAskRoute: typeof ApiAskRoute
+  ApiAsrRoute: typeof ApiAsrRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiProvidersRoute: typeof ApiProvidersRoute
+  ApiTtsRoute: typeof ApiTtsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,11 +117,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/providers': {
+      id: '/api/providers'
+      path: '/api/providers'
+      fullPath: '/api/providers'
+      preLoaderRoute: typeof ApiProvidersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/health': {
       id: '/api/health'
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/asr': {
+      id: '/api/asr'
+      path: '/api/asr'
+      fullPath: '/api/asr'
+      preLoaderRoute: typeof ApiAsrRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ask': {
@@ -88,7 +158,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiAskRoute: ApiAskRoute,
+  ApiAsrRoute: ApiAsrRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiProvidersRoute: ApiProvidersRoute,
+  ApiTtsRoute: ApiTtsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
