@@ -89,10 +89,57 @@ function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
-  function startListening() {
+  async function startListening() {
     setError("");
     setInterim("");
     finalRef.current = "";
+
+    if (asrProvider === "deepgram") {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStreamRef.current = stream;
+        const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+          ? "audio/webm;codecs=opus"
+          : "audio/webm";
+        const mr = new MediaRecorder(stream, { mimeType: mime });
+        mediaChunksRef.current = [];
+        mr.ondataavailable = (e) => {
+          if (e.data.size > 0) mediaChunksRef.current.push(e.data);
+        };
+        mr.onstop = async () => {
+          mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+          mediaStreamRef.current = null;
+          const blob = new Blob(mediaChunksRef.current, { type: mime });
+          if (!blob.size) {
+            setStatus("idle");
+            return;
+          }
+          setStatus("thinking");
+          try {
+            const res = await fetch(`/api/asr?lang=${encodeURIComponent(lang)}`, {
+              method: "POST",
+              headers: { "Content-Type": mime },
+              body: blob,
+            });
+            const data = (await res.json()) as { transcript?: string; error?: string };
+            if (!res.ok) throw new Error(data.error || `ASR ${res.status}`);
+            const txt = (data.transcript || "").trim();
+            if (txt) void ask(txt);
+            else setStatus("idle");
+          } catch (e: any) {
+            setStatus("error");
+            setError(e.message || "Deepgram failed");
+          }
+        };
+        mediaRecorderRef.current = mr;
+        mr.start();
+        setStatus("listening");
+      } catch (e: any) {
+        setStatus("error");
+        setError(e.message || "Microphone permission denied");
+      }
+      return;
+    }
 
     if (!speechSupported) {
       setStatus("error");
@@ -135,6 +182,11 @@ function Index() {
   }
 
   function stopListening() {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current = null;
+      return;
+    }
     recognitionRef.current?.stop();
   }
 
@@ -157,14 +209,42 @@ function Index() {
       const data = (await res.json()) as { answer: string };
       const botMsg: Msg = { id: crypto.randomUUID(), role: "assistant", text: data.answer };
       setMessages((m) => [...m, botMsg]);
-      speak(data.answer);
+      void speak(data.answer);
     } catch (e: any) {
       setStatus("error");
       setError(e.message || "Request failed");
     }
   }
 
-  function speak(text: string) {
+  async function speak(text: string) {
+    if (ttsProvider === "openai") {
+      try {
+        setStatus("speaking");
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (!res.ok) throw new Error(`TTS ${res.status}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current?.pause();
+        audioRef.current = audio;
+        audio.onended = () => {
+          setStatus("idle");
+          URL.revokeObjectURL(url);
+        };
+        audio.onerror = () => {
+          setStatus("idle");
+          URL.revokeObjectURL(url);
+        };
+        await audio.play();
+        return;
+      } catch {
+        // fall through to browser TTS
+      }
+    }
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setStatus("idle");
       return;
@@ -181,6 +261,7 @@ function Index() {
     u.onerror = () => setStatus("idle");
     window.speechSynthesis.speak(u);
   }
+
 
   function reset() {
     window.speechSynthesis?.cancel();
