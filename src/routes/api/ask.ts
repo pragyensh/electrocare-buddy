@@ -22,12 +22,12 @@ export const Route = createFileRoute("/api/ask")({
         const lang = body.lang === "hi-IN" || body.lang === "hi" ? "hi" : "en";
         if (!text) return Response.json({ error: "Missing text" }, { status: 400 });
 
-        const apiKey = process.env.OPENAI_API_KEY;
+        const groqKey = process.env.GROQ_API_KEY;
         const domain = classifySupportedDomain(text);
 
         console.log(
           "[ElectroCare] User question",
-          JSON.stringify({ text, lang, hasOpenAI: !!apiKey, domain }),
+          JSON.stringify({ text, lang, hasGroq: !!groqKey, domain }),
         );
 
         if (!domain.inDomain) {
@@ -37,23 +37,23 @@ export const Route = createFileRoute("/api/ask")({
           );
           return Response.json({
             answer: OUT_OF_DOMAIN_RESPONSE,
-            provider: apiKey ? "openai" : "local",
+            provider: groqKey ? "groq" : "local",
             mode: "out_of_domain",
             domain,
           });
         }
 
-        if (apiKey) {
+        if (groqKey) {
           try {
             const { answer, matches, confidence, contextMode } = await answerWithOpenAI(
-              apiKey,
+              groqKey,
               text,
               lang,
             );
             if (answer) {
               return Response.json({
                 answer,
-                provider: "openai",
+                provider: "groq",
                 mode: contextMode,
                 confidence,
                 matches,
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/ask")({
             }
           } catch (e) {
             console.error(
-              "[ElectroCare] OpenAI answer generation failed; not returning retrieved KB as answer",
+              "[ElectroCare] Groq answer generation failed; not returning retrieved KB as answer",
               e,
             );
             const fallback =
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/ask")({
                 ? "Maaf kijiye, AI answer abhi generate nahi ho pa raha. Kripya thodi der baad dobara try karein."
                 : "Sorry, I could not generate an AI answer right now. Please try again in a moment.";
             return Response.json(
-              { answer: fallback, provider: "openai", mode: "openai_error" },
+              { answer: fallback, provider: "groq", mode: "groq_error" },
               { status: 200 },
             );
           }

@@ -2,23 +2,39 @@
 // Note: ChromaDB requires a long-running Python/Node service and cannot run
 // inside the Cloudflare Worker runtime this app deploys to. We use an
 // in-memory cosine-similarity index over OpenAI embeddings (`text-embedding-3-small`)
-// which is functionally equivalent for a 12-entry KB. The retrieval API
+// which is functionally equivalent for chunked markdown KB. The retrieval API
 // (`retrieve(query, k)`) is provider-agnostic so a ChromaDB / pgvector
 // backend can be dropped in later without touching callers.
 
-import kb from "@/data/knowledge-base.json";
+import {
+  loadAndChunkMarkdownDocs,
+  formatChunkInfo,
+  type ChunkedDocument,
+} from "@/lib/markdown-loader";
+import * as path from "path";
 
-type Entry = {
-  id: string;
-  keywords: string[];
-  question_en: string;
-  question_hi: string;
-  answer_en: string;
-  answer_hi: string;
-};
+type Entry = ChunkedDocument;
 
-const ENTRIES = kb as Entry[];
-const CONFIDENCE_THRESHOLD = 0.9;
+// Load markdown docs from knowledge/ directory (only in Node.js runtime, not in Workers)
+let ENTRIES: Entry[] = [];
+let ENTRIES_LOADED = false;
+
+function ensureEntriesLoaded(): void {
+  if (ENTRIES_LOADED) return;
+  try {
+    const knowledgeDir = path.join(process.cwd(), "knowledge");
+    ENTRIES = loadAndChunkMarkdownDocs(knowledgeDir);
+    ENTRIES_LOADED = true;
+    console.log(`[ElectroCare] RAG Index initialized: ${ENTRIES.length} chunks ready`);
+    console.log(`[ElectroCare] ${formatChunkInfo(ENTRIES)}`);
+  } catch (err) {
+    console.error("[ElectroCare] Failed to load markdown docs, falling back to empty KB:", err);
+    ENTRIES = [];
+    ENTRIES_LOADED = true;
+  }
+}
+
+const CONFIDENCE_THRESHOLD = 0.7;
 export const OUT_OF_DOMAIN_RESPONSE =
   "I currently support ACs, refrigerators, washing machines, microwaves, geysers and related home appliances.";
 
@@ -42,6 +58,9 @@ const SUPPORTED_DOMAIN_TERMS = [
   "फ्रिज",
   "रेफ्रिजरेटर",
   "वॉशिंग मशीन",
+  "वाशिंग मशीन",
+  "वॉशिंगमशीन",
+  "वाशिंगमशीन",
   "माइक्रोवेव",
   "गीजर",
 ];
@@ -114,21 +133,32 @@ let INDEX: Indexed[] | null = null;
 let INDEX_PROMISE: Promise<Indexed[]> | null = null;
 
 function entryDoc(e: Entry): string {
-  return [e.question_en, e.question_hi, e.answer_en, e.answer_hi, e.keywords.join(", ")].join("\n");
+  return [e.title, e.section, e.content, e.keywords.join(", ")].join("\n");
 }
 
 async function embedBatch(apiKey: string, texts: string[]): Promise<number[][]> {
-  const res = await fetch("https://api.openai.com/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({ model: "text-embedding-3-small", input: texts }),
-  });
-  if (!res.ok) throw new Error(`Embeddings failed: ${res.status} ${await res.text()}`);
-  const data = (await res.json()) as { data: { embedding: number[] }[] };
-  return data.data.map((d) => d.embedding);
+  if (!apiKey) {
+    console.warn(
+      "[ElectroCare] Embeddings unavailable. Falling back to keyword mode. No API key configured.",
+    );
+    return texts.map(() => []);
+  }
+  try {
+    const res = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: "text-embedding-3-small", input: texts }),
+    });
+    if (!res.ok) {
+      console.warn(`[ElectroCare] Embeddings API error: ${res.status} ${await res.text()}`);
+      return texts.map(() => []);
+    }
+    const data = (await res.json()) as { data: { embedding: number[] }[] };
+    return data.data.map((d) => d.embedding);
+  } catch (err: any) {
+    console.warn("[ElectroCare] Embeddings unavailable. Falling back to keyword mode.", err);
+    return texts.map(() => []);
+  }
 }
 
 function cosine(a: number[], b: number[]): number {
@@ -144,11 +174,13 @@ function cosine(a: number[], b: number[]): number {
 }
 
 export async function ensureIndex(apiKey: string): Promise<Indexed[]> {
+  ensureEntriesLoaded();
   if (INDEX) return INDEX;
   if (INDEX_PROMISE) return INDEX_PROMISE;
   INDEX_PROMISE = (async () => {
     const vectors = await embedBatch(apiKey, ENTRIES.map(entryDoc));
     INDEX = ENTRIES.map((entry, i) => ({ entry, vector: vectors[i] }));
+    console.log(`[ElectroCare] Indexing complete: ${INDEX.length} vectors embedded`);
     return INDEX;
   })();
   try {
@@ -171,8 +203,8 @@ export async function retrieveSemantic(
     .slice(0, k);
 }
 
-// Keyword fallback (used when OPENAI_API_KEY is absent or on embed failure).
 export function retrieveKeyword(query: string, k = 4): { entry: Entry; score: number }[] {
+  ensureEntriesLoaded();
   const q = query.toLowerCase();
   const tokens = q
     .replace(/[^\p{L}\p{N}\s]/gu, " ")
@@ -188,18 +220,18 @@ export function retrieveKeyword(query: string, k = 4): { entry: Entry; score: nu
         else if (k2.includes(tok) || tok.includes(k2)) score += 1;
       }
     }
+    const contentLower = entry.content.toLowerCase();
+    const titleLower = entry.title.toLowerCase();
+    for (const tok of tokens) {
+      if (titleLower.includes(tok)) score += 2;
+      if (contentLower.includes(tok)) score += 1;
+    }
     return { entry, score };
   });
   return scored
     .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, k);
-}
-
-export function bestKeywordAnswer(query: string, lang: "en" | "hi"): string | null {
-  const top = retrieveKeyword(query, 1)[0];
-  if (!top || top.score === 0) return null;
-  return lang === "hi" ? top.entry.answer_hi : top.entry.answer_en;
 }
 
 export function formatContext(
@@ -209,35 +241,18 @@ export function formatContext(
   if (!matches.length) return "(no relevant entries found)";
   return matches
     .map(({ entry, score }, i) => {
-      const q = lang === "hi" ? entry.question_hi : entry.question_en;
-      const a = lang === "hi" ? entry.answer_hi : entry.answer_en;
-      return `[${i + 1}] (score=${score.toFixed(3)}) Q: ${q}\nA: ${a}`;
+      return `[${i + 1}] (score=${score.toFixed(3)}, doc=${entry.filePath}, section=${entry.section}) Title: ${entry.title}\nContent: ${entry.content.substring(0, 500)}...`;
     })
     .join("\n\n");
 }
-function isTroubleshootingQuestion(query: string): boolean {
-  const q = query.toLowerCase();
 
-  const troubleshootingPatterns = [
-    "not working",
-    "not cooling",
-    "leaking",
-    "making noise",
-    "error",
-    "problem",
-    "issue",
-    "stopped",
-    "broken",
-    "not starting",
-    "not heating",
-    "not draining",
-    "not spinning",
-    "not freezing",
-    "cooling issue",
-  ];
-
-  return troubleshootingPatterns.some((p) => q.includes(p));
+export function bestKeywordAnswer(query: string, lang: "en" | "hi"): string | null {
+  ensureEntriesLoaded();
+  const top = retrieveKeyword(query, 1)[0];
+  if (!top || top.score === 0) return null;
+  return top.entry.content;
 }
+
 export async function answerWithOpenAI(
   apiKey: string,
   query: string,
@@ -248,48 +263,38 @@ export async function answerWithOpenAI(
   confidence: number;
   contextMode: "retrieved_context" | "openai_only";
 }> {
+  ensureEntriesLoaded();
+
   let matches: { entry: Entry; score: number }[] = [];
+
   try {
-    matches = await retrieveSemantic(apiKey, query, 4);
+    matches = retrieveKeyword(query, 4);
   } catch (error) {
-    console.error(
-      "[ElectroCare] Semantic retrieval failed; OpenAI will answer without KB context",
-      error,
-    );
+    console.error("[ElectroCare] Keyword retrieval failed", error);
   }
 
-  const confidence = matches[0]?.score ?? 0;
+  const confidence = matches.length ? 1 : 0;
 
-  const educationalPatterns = [
-    "what is",
-    "how does",
-    "difference between",
-    "advantages of",
-    "benefits of",
-    "how often",
-    "why does",
-    "why is",
-    "explain",
-  ];
-
-  const isEducationalQuestion = educationalPatterns.some((p) => query.toLowerCase().includes(p));
-
-  const shouldUseRetrieval =
-    isTroubleshootingQuestion(query) && !isEducationalQuestion && confidence > CONFIDENCE_THRESHOLD;
+  const shouldUseRetrieval = matches.length > 0;
 
   const contextMatches = shouldUseRetrieval ? matches : [];
-
   const contextMode = contextMatches.length ? "retrieved_context" : "openai_only";
+
+  const injectedDocIds = contextMatches.map((m) => m.entry.id);
   console.log(
     "[ElectroCare] Retrieved documents",
     JSON.stringify({
       threshold: CONFIDENCE_THRESHOLD,
       confidence,
       contextMode,
-      documents: matches.map(({ entry, score }) => ({
+      injectedDocIds,
+      matchDetails: matches.map(({ entry, score }) => ({
         id: entry.id,
+        title: entry.title,
+        section: entry.section,
+        file: entry.filePath,
         score,
-        question_en: entry.question_en,
+        usedInContext: contextMatches.some((cm) => cm.entry.id === entry.id),
       })),
     }),
   );
@@ -307,15 +312,9 @@ export async function answerWithOpenAI(
 The final answer must be your own support-agent response. Retrieved knowledge is context only and must never be copied directly as the answer.
 Always: 1) acknowledge the problem, 2) explain the likely cause briefly, 3) give 2-4 concrete steps the user can try safely, 4) advise when to call a technician (gas leaks, burning smell, sparks, water near electricity).
 Never invent model-specific part numbers. Do not use markdown formatting or bullet symbols — speak plainly so a TTS engine reads it naturally.
-If the retrieved context does not directly answer the user's question,
-ignore the retrieved context and answer using your own appliance knowledge.
-
-Do not force unrelated troubleshooting articles into maintenance,
-educational, comparison, or general appliance questions.
-
-If the user asks for maintenance schedules, appliance concepts,
-energy consumption, appliance differences, or best practices,
-provide a direct expert answer rather than trying to match a troubleshooting article.
+If the retrieved context does not directly answer the user's question, ignore the retrieved context and answer using your own appliance knowledge.
+Do not force unrelated troubleshooting articles into maintenance, educational, comparison, or general appliance questions.
+If the user asks for maintenance schedules, appliance concepts, energy consumption, appliance differences, or best practices, provide a direct expert answer rather than trying to match a troubleshooting article.
 ${langInstruction}
 
 ${contextBlock}`;
@@ -331,23 +330,20 @@ ${contextBlock}`;
   };
 
   console.log(
-    "[ElectroCare] OpenAI request",
+    "[ElectroCare] Groq request",
     JSON.stringify({
       model: payload.model,
       temperature: payload.temperature,
       max_tokens: payload.max_tokens,
       contextMode,
       confidence,
-      messages: payload.messages,
+      injectedDocIds,
     }),
   );
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Chat failed: ${res.status} ${await res.text()}`);
@@ -356,12 +352,13 @@ ${contextBlock}`;
   };
   const answer = data.choices[0]?.message?.content?.trim() || "";
   console.log(
-    "[ElectroCare] OpenAI response",
+    "[ElectroCare] Groq response",
     JSON.stringify({
-      answer,
+      answerLength: answer.length,
       finishReason: data.choices[0]?.finish_reason,
       contextMode,
       confidence,
+      injectedDocIds,
     }),
   );
   return {

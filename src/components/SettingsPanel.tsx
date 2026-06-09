@@ -10,12 +10,12 @@ import {
 } from "@/components/ui/sheet";
 
 export type AsrProvider = "browser" | "deepgram";
-export type TtsProvider = "browser" | "openai";
+export type TtsProvider = "browser" | "openai" | "sarvam";
 
 export type ProviderStatus = {
   ai: { active: string; model: string; fallback: boolean };
   asr: { available: string[]; hasDeepgram: boolean };
-  tts: { available: string[]; hasOpenAI: boolean };
+  tts: { available: string[]; hasOpenAI: boolean; hasSarvam?: boolean };
 };
 
 export function SettingsPanel({
@@ -95,12 +95,22 @@ export function SettingsPanel({
               value={tts}
               onChange={onTtsChange as (v: string) => void}
               options={[
-                { value: "browser", label: "Browser (speechSynthesis)", enabled: true },
+                {
+                  value: "browser",
+                  label: "Browser (speechSynthesis)",
+                  enabled: true,
+                },
                 {
                   value: "openai",
                   label: "OpenAI (gpt-4o-mini-tts)",
                   enabled: !!status?.tts.hasOpenAI,
                   hint: status && !status.tts.hasOpenAI ? "OPENAI_API_KEY missing" : undefined,
+                },
+                {
+                  value: "sarvam",
+                  label: "Sarvam AI Hindi TTS",
+                  enabled: !!status?.tts.hasSarvam,
+                  hint: status && !status.tts.hasSarvam ? "SARVAM_API_KEY missing" : undefined,
                 },
               ]}
             />

@@ -249,13 +249,17 @@ function Index() {
   }
 
   async function speak(text: string) {
-    if (ttsProvider === "openai") {
+    if (ttsProvider === "openai" || ttsProvider === "sarvam") {
       try {
         setStatus("speaking");
         const res = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({
+            text,
+            provider: ttsProvider,
+            lang,
+          }),
         });
         if (!res.ok) throw new Error(`TTS ${res.status}`);
         const blob = await res.blob();
