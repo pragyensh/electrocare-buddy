@@ -4,7 +4,7 @@
 ![RAG](https://img.shields.io/badge/RAG-Enabled-orange)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-# 🤖 ElectroCare AI
+
 # 🤖 ElectroCare AI
 
 ### AI-Powered Voice Support Assistant for Home Appliances
