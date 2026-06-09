@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, MicOff, Languages, Bot, User, Volume2, Wrench, RotateCcw, Send } from "lucide-react";
 import { SettingsPanel, type AsrProvider, type TtsProvider } from "@/components/SettingsPanel";
-
+import idleRobot from "@/assets/robot.png-removebg-preview.png";
+import listeningRobot from "@/assets/listening robo.png";
+import thinkingRobot from "@/assets/thinking robo.png";
+import speakingRobot from "@/assets/speaking robo.png";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -336,10 +339,18 @@ function Index() {
   }
 
   const isListening = status === "listening";
+  const robotImage =
+    status === "listening"
+      ? listeningRobot
+      : status === "thinking"
+        ? thinkingRobot
+        : status === "speaking"
+          ? speakingRobot
+          : idleRobot;
 
   return (
-    <div className="min-h-screen text-foreground" style={{ background: "var(--gradient-bg)" }}>
-      <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-4 py-6 sm:py-10">
+    <div className="h-screen text-foreground" style={{ background: "var(--gradient-bg)" }}>
+      <div className="mx-auto flex h-screen max-w-7xl flex-col px-4 py-6 overflow-hidden">
         {/* Header */}
         <header className="mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -409,12 +420,30 @@ function Index() {
             </button>
           )}
         </div>
+        <div className="fixed right-[-60px] bottom-28 z-20 hidden xl:block">
+          <img
+            src={robotImage}
+            alt="ElectroCare Assistant"
+            className="robot-float h-[450px] w-auto opacity-95"
+            style={{
+              filter:
+                "drop-shadow(0 0 20px rgba(0,229,255,0.35)) drop-shadow(0 0 50px rgba(0,229,255,0.15))",
+            }}
+          />
+        </div>
 
         {/* Chat */}
         <div
           ref={scrollRef}
-          className="mb-4 flex-1 overflow-y-auto rounded-3xl border border-border bg-card/50 p-4 backdrop-blur"
-          style={{ boxShadow: "var(--shadow-card)", minHeight: "50vh" }}
+          className="mb-4 flex-1 overflow-y-auto rounded-3xl border border-cyan-400/20 bg-card/40 p-4 backdrop-blur-xl min-h-0"
+          style={{
+            height: "100%",
+            boxShadow: `
+              0 0 20px rgba(0,229,255,0.15),
+              0 0 60px rgba(0,229,255,0.08),
+              inset 0 0 20px rgba(0,229,255,0.04)
+           `,
+          }}
         >
           <div className="flex flex-col gap-4">
             {messages.map((m) => (
@@ -442,7 +471,7 @@ function Index() {
         )}
 
         {/* Quick prompts */}
-        <div className="mb-3 flex flex-wrap gap-2">
+        <div className="mb-3 flex flex-wrap gap-2 shrink-0">
           {t.quick.map((q) => (
             <button
               key={q}
@@ -457,7 +486,7 @@ function Index() {
 
         {/* Composer */}
         <form
-          className="flex items-end gap-3 rounded-3xl border border-border bg-card/60 p-3"
+          className="shrink-0 flex items-end gap-3 rounded-3xl border border-border bg-card/60 p-3"
           style={{ boxShadow: "var(--shadow-card)" }}
           onSubmit={(e) => {
             e.preventDefault();

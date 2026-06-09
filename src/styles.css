@@ -153,6 +153,24 @@
 .bar:nth-child(5) {
   animation-delay: 0.6s;
 }
+@keyframes robotFloat {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.robot-float {
+  animation: robotFloat 4s ease-in-out infinite;
+}
+
 
 @layer base {
   * {
