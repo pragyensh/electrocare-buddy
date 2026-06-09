@@ -1,3 +1,10 @@
+![React](https://img.shields.io/badge/React-19-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Groq](https://img.shields.io/badge/Groq-LLM-green)
+![RAG](https://img.shields.io/badge/RAG-Enabled-orange)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+# 🤖 ElectroCare AI
 # 🤖 ElectroCare AI
 
 ### AI-Powered Voice Support Assistant for Home Appliances
