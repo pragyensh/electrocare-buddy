@@ -257,6 +257,7 @@ export async function answerWithOpenAI(
   apiKey: string,
   query: string,
   lang: "en" | "hi",
+  history: { role: string; text: string }[] = [],
 ): Promise<{
   answer: string;
   matches: { id: string; score: number; usedForContext: boolean }[];
@@ -301,8 +302,26 @@ export async function answerWithOpenAI(
 
   const langInstruction =
     lang === "hi"
-      ? "Reply in conversational Hinglish (romanized Hindi mixed with simple English). Keep it warm, like a phone support agent. 3-5 short sentences. Mention likely causes and clear troubleshooting steps."
-      : "Reply in clear, friendly English like a phone support agent for Indian customers. 3-5 short sentences. Mention likely causes and clear troubleshooting steps.";
+      ? `Reply in conversational Hinglish (romanized Hindi mixed with simple English).
+
+VOICE ASSISTANT MODE:
+- Maximum 3 short sentences.
+- Maximum 60 words.
+- Briefly explain the likely cause.
+- Give 2-3 troubleshooting steps.
+- Avoid long paragraphs.
+- Do not give long explanations.
+- Expand only if the user asks for more details.`
+      : `Reply in clear, friendly English.
+
+VOICE ASSISTANT MODE:
+- Maximum 3 short sentences.
+- Maximum 60 words.
+- Briefly explain the likely cause.
+- Give 2-3 troubleshooting steps.
+- Avoid long paragraphs.
+- Do not give long explanations.
+- Expand only if the user asks for more details.`;
 
   const contextBlock = contextMatches.length
     ? `Retrieved knowledge to use as context only, not as the final answer:\n${formatContext(contextMatches, lang)}`
@@ -310,7 +329,12 @@ export async function answerWithOpenAI(
 
   const system = `You are ElectroCare, a customer support agent for home electrical appliances (AC, washing machine, refrigerator, microwave, geyser).
 The final answer must be your own support-agent response. Retrieved knowledge is context only and must never be copied directly as the answer.
-Always: 1) acknowledge the problem, 2) explain the likely cause briefly, 3) give 2-4 concrete steps the user can try safely, 4) advise when to call a technician (gas leaks, burning smell, sparks, water near electricity).
+For troubleshooting questions:
+Mention only the most likely cause and the next recommended action.
+
+Keep the response under 50-60 words whenever possible.
+
+Only provide detailed explanations if the user explicitly asks for more information.
 Never invent model-specific part numbers. Do not use markdown formatting or bullet symbols — speak plainly so a TTS engine reads it naturally.
 If the retrieved context does not directly answer the user's question, ignore the retrieved context and answer using your own appliance knowledge.
 Do not force unrelated troubleshooting articles into maintenance, educational, comparison, or general appliance questions.
@@ -322,9 +346,13 @@ ${contextBlock}`;
   const payload = {
     model: "llama-3.3-70b-versatile",
     temperature: 0.4,
-    max_tokens: 900,
+    max_tokens: 160,
     messages: [
       { role: "system", content: system },
+      ...history.map((m) => ({
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.text,
+      })),
       { role: "user", content: query },
     ],
   };

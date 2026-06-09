@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/tts")({
         // ---------- SARVAM ----------
         if (body.provider === "sarvam") {
           const sarvamKey = process.env.SARVAM_API_KEY;
-
+          console.time("SARVAM_GENERATION");
           console.log("[SARVAM] TTS REQUEST", {
             text,
             provider: body.provider,
@@ -52,7 +52,7 @@ export const Route = createFileRoute("/api/tts")({
               speaker: "shubh",
               target_language_code: body.lang === "hi-IN" ? "hi-IN" : "en-IN",
             });
-
+            console.timeEnd("SARVAM_GENERATION");
             console.log("[SARVAM] AUDIO GENERATED");
 
             const audioBuffer = Buffer.from(response.audios.join(""), "base64");

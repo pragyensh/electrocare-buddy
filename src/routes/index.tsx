@@ -122,6 +122,10 @@ function Index() {
   }, [lang]);
 
   async function startListening() {
+    // Stop current TTS immediately
+    audioRef.current?.pause();
+    audioRef.current = null;
+    window.speechSynthesis?.cancel();
     setError("");
     setInterim("");
     finalRef.current = "";
@@ -196,17 +200,34 @@ function Index() {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const r = event.results[i];
         const txt = r[0]?.transcript || "";
-        if (r.isFinal) finalRef.current = (finalRef.current + " " + txt).trim();
-        else live = (live + " " + txt).trim();
+        if (r.isFinal) {
+          finalRef.current = (finalRef.current + " " + txt).trim();
+
+          const finalText = finalRef.current.trim();
+
+          if (finalText) {
+            setInterim("");
+
+            if (!(rec as any).__submitted) {
+              (rec as any).__submitted = true;
+
+              rec.stop();
+
+              void ask(finalText);
+            }
+          }
+        } else {
+          live = (live + " " + txt).trim();
+        }
       }
       setInterim(finalRef.current || live);
     };
     rec.onend = () => {
       recognitionRef.current = null;
-      const finalText = finalRef.current.trim();
+
       setInterim("");
-      if (finalText) void ask(finalText);
-      else setStatus((s) => (s === "listening" ? "idle" : s));
+
+      setStatus((s) => (s === "listening" ? "idle" : s));
     };
 
     recognitionRef.current = rec;
@@ -230,12 +251,15 @@ function Index() {
     setDraft("");
     setStatus("thinking");
     setError("");
-
+    const history = messages.slice(-6).map((m) => ({
+      role: m.role,
+      text: m.text,
+    }));
     try {
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: clean, lang }),
+        body: JSON.stringify({ text: clean, lang, history }),
       });
       if (!res.ok) throw new Error(`Server ${res.status}`);
       const data = (await res.json()) as { answer: string };
@@ -252,6 +276,7 @@ function Index() {
     if (ttsProvider === "openai" || ttsProvider === "sarvam") {
       try {
         setStatus("speaking");
+        console.time("TTS");
         const res = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -263,6 +288,7 @@ function Index() {
         });
         if (!res.ok) throw new Error(`TTS ${res.status}`);
         const blob = await res.blob();
+        console.timeEnd("TTS");
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         audioRef.current?.pause();
@@ -368,6 +394,20 @@ function Index() {
           </div>
 
           <StatusPill status={status} label={t.status[status]} />
+          {status === "speaking" && (
+            <button
+              onClick={() => {
+                audioRef.current?.pause();
+                audioRef.current = null;
+                window.speechSynthesis?.cancel();
+                setStatus("idle");
+              }}
+              type="button"
+              className="rounded-full border border-red-500 px-3 py-1 text-xs font-medium text-red-500 hover:bg-red-500/10"
+            >
+              Stop Voice
+            </button>
+          )}
         </div>
 
         {/* Chat */}

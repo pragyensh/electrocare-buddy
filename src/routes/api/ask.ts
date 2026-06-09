@@ -11,7 +11,14 @@ export const Route = createFileRoute("/api/ask")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        let body: { text?: string; lang?: string };
+        let body: {
+          text?: string;
+          lang?: string;
+          history?: {
+            role: string;
+            text: string;
+          }[];
+        };
         try {
           body = await request.json();
         } catch {
@@ -19,6 +26,7 @@ export const Route = createFileRoute("/api/ask")({
         }
 
         const text = (body.text || "").trim();
+        const history = body.history || [];
         const lang = body.lang === "hi-IN" || body.lang === "hi" ? "hi" : "en";
         if (!text) return Response.json({ error: "Missing text" }, { status: 400 });
 
@@ -29,8 +37,8 @@ export const Route = createFileRoute("/api/ask")({
           "[ElectroCare] User question",
           JSON.stringify({ text, lang, hasGroq: !!groqKey, domain }),
         );
-
-        if (!domain.inDomain) {
+        const isFollowUp = /describe|detail|detail mein|aur batao|more|explain|samjhao/i.test(text);
+        if (!domain.inDomain && !isFollowUp) {
           console.log(
             "[ElectroCare] Domain classification blocked retrieval",
             JSON.stringify({ text, reason: domain.reason }),
@@ -49,6 +57,7 @@ export const Route = createFileRoute("/api/ask")({
               groqKey,
               text,
               lang,
+              history,
             );
             if (answer) {
               return Response.json({
